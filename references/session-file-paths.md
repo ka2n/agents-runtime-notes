@@ -1,6 +1,6 @@
 # Agent Session File Paths Reference
 
-Last verified: 2026-04-08
+Last verified: 2026-04-09
 
 This document lists known local session and transcript file locations for coding agents.
 
@@ -43,6 +43,25 @@ Observed useful fields and hints:
 - parent transcript contains `tool_use` entries for the `Agent` tool
 - the corresponding `tool_result` may contain `toolUseResult.agentId`
 - subagent `.meta.json` may contain fields such as `agentType` and `description`
+- parent and subagent JSONL files may also contain `file-history-snapshot` lines with `trackedFileBackups`
+
+Observed additional metadata file:
+
+```text
+~/.claude/projects/<encoded-cwd>/sessions-index.json
+```
+
+Observed index entry fields:
+
+- `sessionId`
+- `fullPath`
+- `firstPrompt`
+- `summary`
+- `messageCount`
+- `created`
+- `modified`
+- `projectPath`
+- `isSidechain`
 
 See also: [`agents/claude-code.md`](../agents/claude-code.md)
 
@@ -79,6 +98,22 @@ Other observed hints:
 - `agent_nickname`
 - `agent_role`
 - spawn-side events such as `collab_agent_spawn_end` may reference the child thread
+
+Observed additional metadata files:
+
+```text
+~/.codex/state_<N>.sqlite
+~/.codex/logs_<N>.sqlite
+```
+
+Observed roles of each file:
+
+- `sessions/...jsonl`
+  - canonical transcript and session history
+- `state_<N>.sqlite`
+  - thread index, rollout path cache, spawn edges, dynamic tools, backfill state
+- `logs_<N>.sqlite`
+  - runtime logs keyed by timestamp, `thread_id`, and `process_uuid`
 
 See also: [`agents/codex.md`](../agents/codex.md)
 
@@ -127,8 +162,7 @@ reparse changed files only
 - Prefer hook events for current state and transcript files for recovery and enrichment.
 - Split your internal model into `live event state` and `transcript-derived metadata`.
 
-## Prior art
+## Related references
 
-- agent-sessions
-  - https://github.com/jazzyalex/agent-sessions
-  - Useful for surveying path conventions across multiple agents.
+- [`references/prior-art.md`](prior-art.md)
+  - External tools and projects useful for comparing session discovery and multi-agent tooling patterns.

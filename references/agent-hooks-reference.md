@@ -1,6 +1,6 @@
 # Agent Hook References
 
-Last verified: 2026-04-08
+Last verified: 2026-04-09
 
 This file is the index of upstream references and related material.
 
@@ -13,6 +13,10 @@ This file is the index of upstream references and related material.
 - Session file paths reference
   - [`references/session-file-paths.md`](session-file-paths.md)
   - Transcript locations and filesystem discovery patterns across agents.
+
+- Prior art
+  - [`references/prior-art.md`](prior-art.md)
+  - External tools and projects that are useful comparison material for session discovery and multi-agent tooling.
 
 - Claude Code notes
   - [`agents/claude-code.md`](../agents/claude-code.md)
@@ -53,12 +57,6 @@ This file is the index of upstream references and related material.
 - Gemini CLI repository
   - https://github.com/google-gemini/gemini-cli
   - Useful as a reference point for transcript-first integrations where hooks are not documented.
-
-## Prior art
-
-- agent-sessions
-  - https://github.com/jazzyalex/agent-sessions
-  - Surveys transcript paths and session discovery patterns across multiple coding agents.
 
 ## Related upstream issues and implementation notes
 

@@ -1,6 +1,6 @@
 # Claude Code Integration
 
-Last verified: 2026-04-08
+Last verified: 2026-04-09
 
 This file summarizes Claude Code behavior relevant to authors building tools that integrate with Claude sessions, hooks, and transcripts.
 
@@ -73,6 +73,110 @@ Practical design takeaway:
 - use hooks as the low-latency source for live events
 - use transcripts for recovery, browsing, and subagent linkage
 - prefer `PermissionRequest` over notification heuristics when you need approval-aware integrations
+
+## Session File Format
+
+Claude session transcripts are JSONL files, but the line schema is more heterogeneous than a simple chat log.
+
+Observed parent session path:
+
+- `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl`
+
+Observed subagent paths:
+
+- `~/.claude/projects/<encoded-cwd>/<session-id>/subagents/agent-<agent-id>.jsonl`
+- `~/.claude/projects/<encoded-cwd>/<session-id>/subagents/agent-<agent-id>.meta.json`
+
+Observed top-level JSONL line families:
+
+- `file-history-snapshot`
+- `user`
+- `assistant`
+- `system`
+- `progress`
+
+Observed common envelope fields on conversation entries:
+
+- `parentUuid`
+- `uuid`
+- `timestamp`
+- `sessionId`
+- `cwd`
+- `gitBranch`
+- `version`
+- `isSidechain`
+
+Observed message payload patterns:
+
+- `type: "user"` records may contain normal user prompts, command echoes, or `tool_result`
+- `type: "assistant"` records may contain plain text or `tool_use`
+- `type: "progress"` records include hook progress and other execution progress
+- `type: "system"` records include synthesized summaries such as stop-hook results
+
+Observed `file-history-snapshot` shape:
+
+```json
+{
+  "type": "file-history-snapshot",
+  "messageId": "<uuid>",
+  "snapshot": {
+    "messageId": "<uuid>",
+    "trackedFileBackups": {
+      "path/to/file": {
+        "backupFileName": "<hash>@v2",
+        "version": 2,
+        "backupTime": "2026-03-12T16:09:24.803Z"
+      }
+    },
+    "timestamp": "2026-03-12T16:09:24.788Z"
+  },
+  "isSnapshotUpdate": false
+}
+```
+
+Practical interpretation:
+
+- the transcript interleaves conversation and file-backup metadata
+- file backup metadata is session-local and keyed by message IDs
+- parsers should not assume every line is a conversational turn
+
+## Additional Local Metadata
+
+Claude appears to maintain a per-project session index alongside raw JSONL files.
+
+Observed file:
+
+- `~/.claude/projects/<encoded-cwd>/sessions-index.json`
+
+Observed entry fields include:
+
+- `sessionId`
+- `fullPath`
+- `fileMtime`
+- `firstPrompt`
+- `summary`
+- `messageCount`
+- `created`
+- `modified`
+- `gitBranch`
+- `projectPath`
+- `isSidechain`
+
+Observed subagent metadata file:
+
+- `subagents/agent-<agent-id>.meta.json`
+
+Observed minimal example:
+
+```json
+{ "agentType": "Explore" }
+```
+
+Practical design takeaway:
+
+- use parent and subagent JSONL files as the canonical transcript source
+- use `sessions-index.json` as a convenience index, not the source of truth
+- treat `file-history-snapshot` lines as a distinct metadata stream embedded in the transcript
 
 ## Notes About JSON Output
 

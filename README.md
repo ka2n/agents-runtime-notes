@@ -1,6 +1,6 @@
 # Agent Runtime Notes
 
-Last updated: 2026-04-08
+Last updated: 2026-04-09
 
 This repository is a runtime reference for authors building tools that integrate with multiple coding agents such as Claude Code and Codex.
 
@@ -21,6 +21,8 @@ It focuses on:
   - Cross-agent patterns, examples, and design guidance
 - [`references/session-file-paths.md`](references/session-file-paths.md)
   - Transcript and session file path reference across agents
+- [`references/prior-art.md`](references/prior-art.md)
+  - External reference projects for session discovery and multi-agent tooling
 - [`agents/claude-code.md`](agents/claude-code.md)
   - Claude Code specific notes
 - [`agents/codex.md`](agents/codex.md)

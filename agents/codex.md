@@ -1,6 +1,6 @@
 # Codex Integration
 
-Last verified: 2026-04-08
+Last verified: 2026-04-09
 
 This file summarizes Codex behavior relevant to authors building tools that integrate with Codex hooks, sessions, and transcripts.
 
@@ -106,6 +106,179 @@ Example shape seen locally:
 ```
 
 The parent session transcript may also contain spawn-side events such as `collab_agent_spawn_end` with `new_thread_id`, which can be used as a secondary cross-check.
+
+## Session File Format
+
+Codex session transcripts are JSONL files.
+
+Observed local layout:
+
+- first line is typically a `session_meta` record
+- later lines are mixed rollout items such as `event_msg`, `response_item`, `turn_context`, `function_call`, and `function_call_output`
+
+Observed first-line shape:
+
+```json
+{
+  "timestamp": "2026-04-09T01:05:35.033Z",
+  "type": "session_meta",
+  "payload": {
+    "id": "<thread-id>",
+    "forked_from_id": "<optional-parent-thread-id>",
+    "timestamp": "2026-04-09T01:02:54.781Z",
+    "cwd": "/path/to/repo",
+    "originator": "codex-tui",
+    "cli_version": "0.118.0",
+    "source": "cli",
+    "model_provider": "openai",
+    "base_instructions": { "text": "..." }
+  }
+}
+```
+
+Fields confirmed in the open-source code for `SessionMeta` include:
+
+- `id`
+- `forked_from_id`
+- `timestamp`
+- `cwd`
+- `originator`
+- `cli_version`
+- `source`
+- `agent_nickname`
+- `agent_role`
+- `agent_path`
+- `model_provider`
+- `base_instructions`
+- `dynamic_tools`
+- `memory_mode`
+
+Important practical details:
+
+- `agent_role` accepts `agent_type` as a serde alias in the OSS protocol type
+- model and reasoning effort are not stored on `session_meta`; the state extractor derives those from `turn_context`
+- title and `first_user_message` are derived from `event_msg.user_message`, not from `session_meta`
+
+## Additional Local Metadata
+
+Codex stores more than transcript JSONL files under `~/.codex/`.
+
+## Storage Direction
+
+The current open-source implementation appears to be in a hybrid phase, not a full SQLite-only design.
+
+What the code makes clear:
+
+- rollout JSONL files are still persisted under `~/.codex/sessions/...`
+- the `codex-state` crate describes SQLite as metadata extracted from JSONL rollouts and mirrored locally
+- startup and recovery include a backfill pass from rollout files into SQLite
+- some runtime paths still explicitly read persisted rollout JSONL, including fork-related flows
+
+Practical interpretation:
+
+- JSONL is still the canonical conversation history today
+- SQLite is a derived local index and state cache for fast listing, resume, linkage, and auxiliary metadata
+- Codex is moving toward stronger SQLite usage, but the current code does not support claiming that JSONL has already been fully replaced
+
+This is also hinted by comments in the rollout code that refer to parity checks during the SQLite migration phase.
+
+### State SQLite
+
+Observed local file:
+
+- `~/.codex/state_5.sqlite`
+
+The open-source runtime creates a versioned state DB filename as:
+
+- `state_<STATE_DB_VERSION>.sqlite`
+
+Observed responsibilities of the state DB:
+
+- index threads for listing and resume
+- cache normalized metadata extracted from rollout JSONL
+- store dynamic tool specs
+- track backfill progress
+- track parent-child spawn edges
+
+Observed tables of highest relevance for session tooling:
+
+- `threads`
+- `thread_dynamic_tools`
+- `thread_spawn_edges`
+- `stage1_outputs`
+- `backfill_state`
+
+Observed `threads` columns include:
+
+- `id`
+- `rollout_path`
+- `created_at`
+- `updated_at`
+- `source`
+- `model_provider`
+- `cwd`
+- `title`
+- `sandbox_policy`
+- `approval_mode`
+- `tokens_used`
+- `archived`
+- `git_sha`
+- `git_branch`
+- `git_origin_url`
+- `cli_version`
+- `first_user_message`
+- `agent_nickname`
+- `agent_role`
+- `memory_mode`
+- `model`
+- `reasoning_effort`
+- `agent_path`
+
+Observed `thread_spawn_edges` shape:
+
+```text
+parent_thread_id TEXT NOT NULL
+child_thread_id  TEXT NOT NULL PRIMARY KEY
+status           TEXT NOT NULL
+```
+
+This is the clearest local metadata source for parent-child linkage when it exists.
+
+### Logs SQLite
+
+Observed local file:
+
+- `~/.codex/logs_1.sqlite`
+
+The open-source runtime creates a separate versioned logs DB filename as:
+
+- `logs_<LOGS_DB_VERSION>.sqlite`
+
+Observed responsibilities of the logs DB:
+
+- store runtime logs separately from thread metadata
+- reduce lock contention against the main state DB
+- index logs by timestamp, `thread_id`, and `process_uuid`
+
+Observed `logs` columns include:
+
+- `ts`
+- `ts_nanos`
+- `level`
+- `target`
+- `feedback_log_body`
+- `module_path`
+- `file`
+- `line`
+- `thread_id`
+- `process_uuid`
+- `estimated_bytes`
+
+Practical design takeaway:
+
+- use JSONL for canonical conversation history
+- use `state_*.sqlite` for fast lookup, listing, and spawn linkage
+- use `logs_*.sqlite` only for diagnostics and correlation, not as the primary conversation source
 
 ## Recommended integration strategy
 
