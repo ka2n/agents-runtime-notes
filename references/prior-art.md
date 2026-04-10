@@ -19,6 +19,9 @@ URL: https://github.com/jazzyalex/agent-sessions
 
 - transcript path conventions across agents
 - session discovery normalization
+- supports Claude Code, Codex, Copilot CLI, Gemini, OpenCode, Droid, Cursor, and OpenClaw
+- Copilot CLI: dedicated `CopilotSessionDiscovery`, `CopilotSessionIndexer`, and `CopilotSessionParser` classes
+- confirms Copilot CLI session path as `~/.copilot/session-state/<sessionId>.jsonl`
 
 ## CodeIsland
 
@@ -28,6 +31,9 @@ URL: https://github.com/wxtsky/CodeIsland
 - parent-child session handling
 - agent coordination UX
 - multi-agent workspace and runtime presentation
+- supports 9 AI tools including Copilot CLI
+- Copilot CLI: reads model info and chat messages from JSONL transcripts
+- Copilot CLI: installs hooks via `~/.copilot/hooks/codeisland.json` (a global hooks path, separate from the per-repo `.github/hooks/`)
 
 ## Notes
 
