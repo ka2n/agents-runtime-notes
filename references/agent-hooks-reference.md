@@ -1,6 +1,6 @@
 # Agent Hook References
 
-Last verified: 2026-04-09
+Last verified: 2026-04-10
 
 This file is the index of upstream references and related material.
 
@@ -23,6 +23,9 @@ This file is the index of upstream references and related material.
 
 - Codex notes
   - [`agents/codex.md`](../agents/codex.md)
+
+- GitHub Copilot CLI notes
+  - [`agents/copilot-cli.md`](../agents/copilot-cli.md)
 
 ## Claude Code
 
@@ -51,6 +54,51 @@ This file is the index of upstream references and related material.
 - Codex open source config notes
   - https://github.com/openai/codex/blob/main/docs/config.md
   - Useful for implementation-adjacent details and historical context.
+
+## GitHub Copilot CLI
+
+- GitHub Copilot CLI documentation
+  - https://docs.github.com/en/copilot/how-tos/use-copilot-agents/use-copilot-cli
+  - Primary usage documentation for the standalone `copilot` CLI.
+
+- GitHub Copilot CLI hooks concept
+  - https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-hooks
+  - Lists all 8 hook events. `agentStop` and `subagentStop` described here but lack detailed schemas.
+
+- GitHub Copilot CLI hooks how-to
+  - https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-hooks
+  - Practical guide for creating hooks with `.github/hooks/*.json`.
+
+- GitHub Copilot CLI hooks reference
+  - https://docs.github.com/en/copilot/reference/hooks-configuration
+  - Full input/output schemas for 6 of 8 events. Key points:
+    - `preToolUse` supports `permissionDecision`, but only `"deny"` is currently processed
+    - `toolArgs` is a JSON string (not a nested object), requiring double-parse
+    - no matcher support; scripts must filter by `toolName` internally
+
+- GitHub Copilot CLI configuration
+  - https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/configure-copilot-cli
+  - Configuration reference including MCP servers, permissions, and trusted folders.
+
+- GitHub Copilot CLI custom instructions
+  - https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions
+  - Supports `.github/copilot-instructions.md`, `.github/instructions/**/*.instructions.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`.
+
+- GitHub Copilot CLI repository
+  - https://github.com/github/copilot-cli
+  - Closed-source repository. Releases and issue tracking.
+
+- Old `gh copilot` extension (archived)
+  - https://github.com/github/gh-copilot
+  - Deprecated 2025-10-25. The `gh copilot suggest` and `gh copilot explain` commands are no longer functional.
+
+- GitHub Copilot CLI Chronicle (session data)
+  - https://docs.github.com/en/copilot/concepts/agents/copilot-cli/chronicle
+  - Session insights system: standup generation, tips, session store.
+
+- GitHub Copilot CLI MCP servers
+  - https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers
+  - Adding and managing MCP server configurations.
 
 ## Other agents
 

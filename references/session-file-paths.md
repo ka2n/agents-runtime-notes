@@ -1,6 +1,6 @@
 # Agent Session File Paths Reference
 
-Last verified: 2026-04-09
+Last verified: 2026-04-10
 
 This document lists known local session and transcript file locations for coding agents.
 
@@ -117,6 +117,52 @@ Observed roles of each file:
 
 See also: [`agents/codex.md`](../agents/codex.md)
 
+## GitHub Copilot CLI
+
+Session storage locations:
+
+```text
+~/.copilot/session-state/<sessionId>.jsonl           # legacy: flat JSONL
+~/.copilot/session-state/<sessionId>/events.jsonl    # current: per-session directory with JSONL
+~/.copilot/session-state/<sessionId>/workspace.yaml  # current: session metadata (e.g. renamed title)
+~/.copilot/session-store.db                          # SQLite session store (derived index, Chronicle data)
+```
+
+Source: path layouts observed in `agent-sessions` CopilotSessionParser (legacy + current) and CopilotSessionDiscovery.
+
+Observed JSONL line envelope: `{ type, data, id, timestamp, parentId }`.
+Key event types: `session.start`, `user.message`, `assistant.message`, `tool.execution_start`, `tool.execution_complete`.
+See [`agents/copilot-cli.md`](../agents/copilot-cli.md) for full event type table and tool call flow.
+
+Configuration and metadata locations:
+
+```text
+~/.copilot/config.json              # global configuration, trusted folders
+~/.copilot/mcp-config.json          # MCP server configurations
+~/.copilot/lsp-config.json          # LSP configurations
+~/.copilot/agents/                  # user-level custom agent definitions
+```
+
+The `COPILOT_HOME` environment variable can override the base directory (`~/.copilot/`).
+
+Session persistence features:
+
+- `copilot --continue`: resume most recent session
+- `copilot --resume`: interactive session picker
+- `/resume [session-id]`: resume from within an active session
+- `/chronicle standup`: generates work summaries from session history
+- `/chronicle reindex`: rebuilds `session-store.db` from session files
+
+Important differences from Claude Code and Codex:
+
+- session format and SQLite schema are not publicly documented
+- `session-store.db` is used by the Chronicle system for standup generation and session browsing
+- there is no documented subagent parent-child linkage in session metadata
+- `/delegate` and `/fleet` create external coding agents tracked as GitHub PRs, not as local transcript files
+- the repository (`github/copilot-cli`) is closed-source, limiting implementation-level verification
+
+See also: [`agents/copilot-cli.md`](../agents/copilot-cli.md)
+
 ## Other agents
 
 These are useful reference points for broader multi-agent tooling, but are not yet documented in depth here.
@@ -124,7 +170,6 @@ These are useful reference points for broader multi-agent tooling, but are not y
 | Agent | Session directory | Notes |
 | --- | --- | --- |
 | Gemini CLI | `~/.gemini/tmp/` | directory names are cwd-derived; JSONL-like session artifacts |
-| GitHub Copilot CLI | `~/.copilot/session-state/` | format not documented here yet |
 | Droid | `~/.factory/sessions/` | format not documented here yet |
 | OpenCode | `~/.local/share/opencode/` | format not documented here yet |
 

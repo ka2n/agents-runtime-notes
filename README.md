@@ -1,8 +1,8 @@
 # Agent Runtime Notes
 
-Last updated: 2026-04-09
+Last updated: 2026-04-10
 
-This repository is a runtime reference for authors building tools that integrate with multiple coding agents such as Claude Code and Codex.
+This repository is a runtime reference for authors building tools that integrate with multiple coding agents such as Claude Code, Codex, and GitHub Copilot CLI.
 
 It focuses on:
 
@@ -27,6 +27,8 @@ It focuses on:
   - Claude Code specific notes
 - [`agents/codex.md`](agents/codex.md)
   - Codex specific notes
+- [`agents/copilot-cli.md`](agents/copilot-cli.md)
+  - GitHub Copilot CLI specific notes
 
 ## Suggested information architecture
 
